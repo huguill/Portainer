@@ -1,0 +1,106 @@
+Los siguientes pasos se realizaron en Portainer (2.5.1)
+
+1- Ingresamos a portainer.
+2- Vamos a App Templates y nos habilitara la opcion Custom Templates abajo de App Template y damos clic.
+3- Dentro de Custom Templates hacemos clic en el boton "Add Custom Template".
+4- Completamos los campos:
+      Title <El nombre que queramos>
+      Description <Una descripcion>
+      Note <alguna nota>
+      Icon URL <URL del icono que queramos (no necesario)>
+      Platform <SO>
+      Type <Standalone>
+  En web editor pegamos lo siguiente:
+  
+version: '2'
+services:
+  rocketchat:
+    image: rocket.chat:latest
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    restart: unless-stopped
+    volumes:
+      - /docker/rocket.chat:/app/uploads
+    environment:
+      - PORT=3000
+      - ROOT_URL=http://localhost:3000
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+      - MAIL_URL=smtp://smtp.email
+#       - HTTP_PROXY=http://proxy.domain.com
+#       - HTTPS_PROXY=http://proxy.domain.com
+    depends_on:
+      - mongo
+    ports:
+      - 3000:3000
+    labels:
+      - "traefik.backend=rocketchat"
+      - "traefik.frontend.rule=Host: your.domain.tld"
+
+  mongo:
+    image: mongo:4.0
+    restart: unless-stopped
+    volumes:
+     - ./data/db:/data/db
+     #- ./data/dump:/dump
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+    labels:
+      - "traefik.enable=false"
+
+  # this container's job is just run the command to initialize the replica set.
+  # it will run the command and remove himself (it will not stay running)
+  mongo-init-replica:
+    image: mongo:4.0
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    depends_on:
+      - mongo
+
+  # hubot, the popular chatbot (add the bot user first and change the password before starting this image)
+  hubot:
+    image: rocketchat/hubot-rocketchat:latest
+    restart: unless-stopped
+    environment:
+      - ROCKETCHAT_URL=rocketchat:3000
+      - ROCKETCHAT_ROOM=GENERAL
+      - ROCKETCHAT_USER=bot
+      - ROCKETCHAT_PASSWORD=botpassword
+      - BOT_NAME=bot
+  # you can add more scripts as you'd like here, they need to be installable by npm
+      - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-diagnostics
+    depends_on:
+      - rocketchat
+    labels:
+      - "traefik.enable=false"
+    volumes:
+      - ./scripts:/home/hubot/scripts
+  # this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
+    ports:
+      - 3001:8080
+      
+      
+  NOTA1: Debemos verificar que en el punto
+  volumes:
+      - /docker/rocket.chat:/app/uploads
+      Exista el directorio /docker/rocket.chat en nuestro host. De lo contrario lo debemos crear.
+      
+ Por último damos clic en el boton "Deploy the stack" para crear el contenedor.
+ 
+ NOTA2: En el caso de que no se genere el contenedor puede ser que de deba a que no descarga la imagen de rocket.chat. En ese caso lo descargamos manualmente.
+ Debemos ir a Images y luego en "Pull Images" en el campo "Image" ponemos rocket.chat y damos clic en el boton "pull the image" de esa manera descargamos la imagen a nuestro host.
+ Luego repetimos el paso 4.
