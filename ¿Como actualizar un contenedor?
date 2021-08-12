@@ -1,0 +1,8 @@
+Para actualizar un contenedor en Portainer debes seguir los siguientes pasos:
+1- Ingresamos a portainer.
+2- Vamos a Containers.
+3- Entramos al contenedor que deseamos actualizar.
+4- Clic en el boton "Recreate". Nos aparece una ventana donde nos pregunta si estamos seguros y nos permite habilitar la opción "Pull latest image" la cual habilitamos. 
+De ésta manera descargaremos la ultima version de la imagen del contenedor y luego lo actualizará.
+NOTA: En este paso tambien nos avisa que cualquier infromacion no persistente en nuestro contenedor se perderá. Verificar si aplica el caso tener los volumenes con los datos de interes.
+5- Por ultimo damos clic en el boton "Recreate". 
