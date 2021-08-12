@@ -1,0 +1,43 @@
+Los siguientes pasos se realizaron en un Debian 10
+
+1-Actualizar Debian: 
+sudo apt-get update
+
+2- Instalacion de paquetes necesarios
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+3- Agregamos key GPG oficial de Docker
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+4- Agregamos repo estable de docker
+sudo echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+5- Volvemos a actualizar indice de repositorios
+sudo apt-get update
+
+6- Instalamos Docker
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+Nota: La instalación mínima solo requiere del paquete docker-ce
+
+Al terminar de instalar verificamos que se este ejecutando el servicio docker
+sudo systemctl status docker
+
+Y tambien podemos ver la version que se instalo
+docker -v
+
+7-Ahora instalamos Portainer
+agregamos el volumen de portainer
+docker volume create portainer_data
+
+8- Ejecutamos el contenedor indicando sus parametros
+docker run -itd -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v /docker/portainer:/data portainer/portainer-ce
+
+9- Por último abrimos en nuestro navegador web la URL localhost:9000 y terminamos la instalación indicando usuario y password.
