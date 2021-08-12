@@ -1,0 +1,11 @@
+Para crear un contenedor en Portainer debes seguir los siguientes pasos:
+1- Ingresamos a portainer.
+2- Vamos a Containers.
+3- Damos clic en el boton "Add container".
+4- Completamos los campos
+    Name: nombre del contenedor
+    Image: ingresamos el nombre de la imagen que deseamos crear. Como referencia podemos buscarla en hub.docker.com.
+    En caso de necesitarlo damos clic en la opción "Advanced mode".
+    Deberemos conocer los parametros que va a utilizar el contenedor a crear, como ser puertos expuestos, volumenes, etc.
+5- Por último damos clic en el botón "Deploy the container".
+    
