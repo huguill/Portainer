@@ -1,0 +1,20 @@
+Los pasos a seguir son sencillos:
+
+    Parar el contenedor.
+    Eliminar el contenedor
+    Descargar la nueva imagen.
+    Crear y ejecutar de nuevo el contenedor.
+
+Abre una terminal y escribe los siguientes comandos:
+1- sudo docker ps
+  Buscamos en la lista el ID que corresponda de nuestro Portainer. Ver la columna CONTAINER ID. En mi caso es a46bc580befb
+2- Lo paramos
+  sudo docker stop a46bc580befb
+3- Lo borramos
+  sudo docker rm a46bc580befb
+4- Descargamos la ultima imagen 
+  sudo docker pull portainer/portainer-ce
+5- Por último ejecutamos el contenedor nuevo
+  sudo docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+  
+  NOTA: verificar antes de ejecutar el comando que los volumenes correspondan con nuestra anterior instalación.
